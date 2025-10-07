@@ -67,6 +67,6 @@ pattern = "_tag.children[2].children[1].config.colour = G.C.UI.TEXT_INACTIVE"
 position = 'at'
 payload = '''
 _tag.children[2].children[1].children[1].config.object.colours = {G.C.UI.TEXT_INACTIVE}
-_tag.children[2].children[2].children[1].config.object.colours = {G.C.UI.TEXT_INACTIVE
+_tag.children[2].children[2].children[1].config.object.colours = {G.C.UI.TEXT_INACTIVE}
 '''
 match_indent = true

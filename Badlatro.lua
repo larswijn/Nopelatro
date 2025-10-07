@@ -2,6 +2,14 @@ local badlatro = SMODS.current_mod
 
 -- SMODS atlas for icon?
 
+SMODS.Atlas {
+	key = 'cards_1',
+	px = 71,
+	py = 95,
+	path = 'AceOfNopes2.png',
+	prefix_config = false
+}
+
 SMODS.Atlas{
 	key = "stickers",
 	px = 71,

@@ -1,0 +1,48 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 1
+
+# Make main splash card Oops
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "SC = Card(G.ROOM.T.w/2 - SC_scale*G.CARD_W/2, 10. + G.ROOM.T.h/2 - SC_scale*G.CARD_H/2, SC_scale*G.CARD_W, SC_scale*G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['j_joker'])"
+position = 'at'
+payload = '''
+SC = Card(G.ROOM.T.w/2 - SC_scale*G.CARD_W/2, 10. + G.ROOM.T.h/2 - SC_scale*G.CARD_H/2, SC_scale*G.CARD_W, SC_scale*G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['j_oops'])
+'''
+match_indent = true
+
+# Only spawn Ace of Nopes on Splash
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "card_size*G.CARD_W, card_size*G.CARD_H, pseudorandom_element(G.P_CARDS), G.P_CENTERS.c_base)"
+position = 'at'
+payload = '''
+card_size*G.CARD_W, card_size*G.CARD_H, G.P_CARDS['D_A'], G.P_CENTERS.c_base)
+'''
+match_indent = true
+
+# Change menu card to be Ace of Nopes
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale, G.P_CARDS.S_A, G.P_CENTERS.c_base)"
+position = 'at'
+payload = '''
+local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale, G.P_CARDS.D_A, G.P_CENTERS.c_base)
+'''
+match_indent = true
+
+# Change screenwipe card to always be Ace of Nopes
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.screenwipecard = Card(1, 1, G.CARD_W, G.CARD_H, pseudorandom_element(G.P_CARDS), G.P_CENTERS.c_base)"
+position = 'at'
+payload = '''
+G.screenwipecard = Card(1, 1, G.CARD_W, G.CARD_H, G.P_CARDS['D_A'], G.P_CENTERS.c_base)
+'''
+match_indent = true
