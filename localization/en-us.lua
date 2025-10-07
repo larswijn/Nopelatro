@@ -17,9 +17,6 @@ return {
 		dictionary = {
 			bad_enable_nope_sticker = "Enable the Nope! Sticker",
 			b_skip_blind_info = " in 2 chance for Tag",
-		},
-		v_dictionary = {
-			b_skip_blind_info = "#1# in #2# chance for Tag",
 		}
     }
 }

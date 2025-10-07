@@ -3,11 +3,10 @@ local badlatro = SMODS.current_mod
 -- SMODS atlas for icon?
 
 SMODS.Atlas {
-	key = 'cards_1',
+	key = 'nope_suit',
 	px = 71,
 	py = 95,
-	path = 'AceOfNopes2.png',
-	prefix_config = false
+	path = 'AceOfNopes2.png'
 }
 
 SMODS.Atlas{
@@ -22,6 +21,24 @@ SMODS.Atlas{
 	px = 71,
 	py = 95,
 	path = "die.png"
+}
+
+SMODS.DeckSkin {
+	key = "nope_suit",
+	suit = "Diamonds",
+	loc_txt = "Nope!",
+	palettes = {
+		{
+			key = "lc",
+			ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
+			display_ranks = {"Ace", "King", "Queen", "Jack", '10', '9', '8', '7', '6', '5', '4', '3', '2'},
+			atlas = "bad_nope_suit",
+			pos_style = 'deck',
+			--[[suit_icon = {
+				atlas = icon_lc.key,
+			},--]]
+		}
+	}
 }
 
 SMODS.Sticker {

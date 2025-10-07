@@ -75,9 +75,9 @@ def process_and_upscale(input_path, input_directory, upscale_directory):
     processed_image = process_image(input_path)
     processed_image.save(output_path, "PNG")
 
-    print("Upscaling image: " + output_path)
-    upscaled_image = upscale_image(processed_image)
-    upscaled_image.save(output_path, "PNG")
+    #print("Upscaling image: " + output_path)
+    #upscaled_image = upscale_image(processed_image)
+    #upscaled_image.save(output_path, "PNG")
 
 def process_directory(input_directory, upscale_directory):
     print("Processing directory: " + input_directory)
