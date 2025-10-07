@@ -69,6 +69,10 @@ SMODS.Consumable:take_ownership('soul',
 	true  -- hide badlatro mod badge
 )
 
+function print_context(context)
+	
+end
+
 -- local functions
 local function nope_event(used_tarot)
 	return G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
@@ -162,7 +166,7 @@ end
 local old_calculate_joker = Card.calculate_joker
 function Card:calculate_joker(context)
 	-- This calculate is caused by a card that is supposed to Nope!
-	if G.GAME.bad_nope then
+	if G.GAME.bad_nope and not context.blueprint_card then
 		G.GAME.bad_nope_blocked = true
 		return nil
 	end
@@ -171,7 +175,7 @@ function Card:calculate_joker(context)
 	local undo_actions = nil
 	local ability_copy = nil
 	
-	if self and self.ability and self.ability.bad_nope and
+	if self and self.ability and self.ability.bad_nope and not context.blueprint_card and
 			not context.mod_probability and not context.fix_probability and not context.pseudorandom_result then
 		-- only do this when card has the sticker and the context isn't probability-related; yes, blueprints stack 1/2 chances
 		if SMODS.pseudorandom_probability(self, 'bad_nope', 1, self.ability.bad_nope_chance) then

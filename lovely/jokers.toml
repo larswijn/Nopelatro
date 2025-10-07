@@ -16,3 +16,17 @@ payload = '''
 	end
 '''
 match_indent = true
+
+# Nope when Dagger slicing
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Ceremonial Dagger' and not context.blueprint then"
+position = 'after'
+payload = '''
+	if G.GAME and G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+'''
+match_indent = true
