@@ -32,3 +32,41 @@ payload = '''
 	end
 '''
 match_indent = true
+
+# text to show 1 in 2 chance
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "{n=G.UIT.T, config={text = localize('b_skip_blind'), scale = 0.4, colour = G.C.UI.TEXT_INACTIVE}}"
+position = 'at'
+payload = '''
+{n=G.UIT.R, config={align = "cm", colour = G.C.CLEAR}, nodes={
+	{n=G.UIT.O, config={object = DynaText({string = localize('b_skip_blind'), scale = 0.4, colours = {G.C.UI.TEXT_INACTIVE}, silent = true, float = false}) }},
+}},
+{n=G.UIT.R, config={align = "cm", colour = G.C.CLEAR}, nodes={
+	{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.probabilities, ref_value = 'normal', suffix = localize('b_skip_blind_info'), scale = 1}}, scale = 0.225, colours = {G.C.UI.TEXT_INACTIVE}, silent = true, float = false}) }},
+}}
+'''
+match_indent = true
+
+# two fixes for previous patch because Thunk hardcoded the UI tree path
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "_tag.children[2].children[1].config.colour = G.C.UI.TEXT_LIGHT"
+position = 'at'
+payload = '''
+_tag.children[2].children[1].children[1].config.object.colours = {G.C.UI.TEXT_LIGHT}
+_tag.children[2].children[2].children[1].config.object.colours = {G.C.UI.TEXT_LIGHT}
+'''
+match_indent = true
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "_tag.children[2].children[1].config.colour = G.C.UI.TEXT_INACTIVE"
+position = 'at'
+payload = '''
+_tag.children[2].children[1].children[1].config.object.colours = {G.C.UI.TEXT_INACTIVE}
+_tag.children[2].children[2].children[1].config.object.colours = {G.C.UI.TEXT_INACTIVE
+'''
+match_indent = true

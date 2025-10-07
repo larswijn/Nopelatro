@@ -69,10 +69,6 @@ SMODS.Consumable:take_ownership('soul',
 	true  -- hide badlatro mod badge
 )
 
-function print_context(context)
-	
-end
-
 -- local functions
 local function nope_event(used_tarot)
 	return G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
@@ -92,15 +88,6 @@ local function nope_event(used_tarot)
 		used_tarot:juice_up(0.3, 0.5)
 		return true 
 	end}))
-end
-
--- hooks
-local old_game_init_game_object = Game.init_game_object
-function Game:init_game_object()
-	local result = old_game_init_game_object(self)
-	result.modifiers = result.modifiers or {}
-	result.modifiers["enable_bad_nope"] = badlatro.config.enable_nope_sticker
-	return result
 end
 
 local function copy_table(t, depth)
@@ -161,6 +148,15 @@ local function tables_match(a, b, depth)
 	end
 
 	return a_size == table_size(b)
+end
+
+-- hooks
+local old_game_init_game_object = Game.init_game_object
+function Game:init_game_object()
+	local result = old_game_init_game_object(self)
+	result.modifiers = result.modifiers or {}
+	result.modifiers["enable_bad_nope"] = badlatro.config.enable_nope_sticker
+	return result
 end
 
 local old_calculate_joker = Card.calculate_joker
@@ -260,7 +256,6 @@ function card_eval_status_text(...)
 	return old_card_eval_status_text(...)
 end
 
-
 local old_calculate_dollar_bonus = Card.calculate_dollar_bonus
 function Card:calculate_dollar_bonus()
 	local should_nope = false
@@ -303,7 +298,6 @@ function Card:use_consumeable(area, copier)
 end
 
 SMODS.current_mod.config_tab = function()
-    local scale = 5/6
     return {n=G.UIT.ROOT, config = {align = "cl", minh = G.ROOM.T.h*0.25, padding = 0.0, r = 0.1, colour = G.C.GREY}, nodes = {
         {n = G.UIT.R, config = { padding = 0.05 }, nodes = {
             {n = G.UIT.C, config = { align = "cr", minw = G.ROOM.T.w*0.25, padding = 0.05 }, nodes = {
