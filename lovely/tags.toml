@@ -1,0 +1,34 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 1
+
+# Chance roll for acquiring tags
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "add_tag(_tag.config.ref_table)"
+position = 'at'
+payload = '''
+	if SMODS.pseudorandom_probability(_tag.config.ref_table, 'bad_tag_nope', 1, 2) then 
+		add_tag(_tag.config.ref_table)
+	else
+		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+		attention_text({
+			text = localize('k_nope_ex'),
+			scale = 1.3, 
+			hold = 1.4,
+			major = G.play,
+			backdrop_colour = G.C.SECONDARY_SET.Tarot,
+			align = (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and 'tm' or 'cm',
+			offset = {x = 0, y = (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and -0.2 or 0},
+			silent = true
+		})
+		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.06*G.SETTINGS.GAMESPEED, blockable = false, blocking = false, func = function()
+			play_sound('tarot2', 0.76, 0.4);return true end}))
+		play_sound('tarot2', 1, 0.4)
+		return true 
+	end}))
+	end
+'''
+match_indent = true
