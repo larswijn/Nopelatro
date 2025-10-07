@@ -3,7 +3,7 @@
 	"name": "Nopelatro",
 	"author": ["MurphyObv", "Larswijn", "Astra", "Stupxd", "Crimson Heart"],
     "badge_colour": "A782D1",
-	"description": "",
+	"description": "What if EVERYTHING in balatro was a flip of the coin?",
 	"prefix": "bad",
 	"main_file": "Nopelatro.lua",
     "version": "0.0.1",
