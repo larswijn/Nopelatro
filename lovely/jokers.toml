@@ -10,7 +10,7 @@ target = "card.lua"
 pattern = "if self.ability.name == 'Invisible Joker' and (self.ability.invis_rounds >= self.ability.extra) and not context.blueprint then"
 position = 'after'
 payload = '''
-	if G.GAME and G.GAME.bad_nope then
+	if G.GAME.bad_nope then
 		G.GAME.bad_nope_blocked = true
 		return
 	end
@@ -24,7 +24,50 @@ target = "card.lua"
 pattern = "if self.ability.name == 'Ceremonial Dagger' and not context.blueprint then"
 position = 'after'
 payload = '''
-	if G.GAME and G.GAME.bad_nope then
+	if G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+'''
+match_indent = true
+
+# Nope when DNA copy
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'DNA' and G.GAME.current_round.hands_played == 0 then"
+position = 'after'
+payload = '''
+	if G.GAME.bad_nope then
+	print ("calculate blocked for dna")
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+'''
+match_indent = true
+
+# Nope when Vampire sucks
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Vampire' and not context.blueprint then"
+position = 'after'
+payload = '''
+	if G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+'''
+match_indent = true
+
+# Nope when Midas activates
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Midas Mask' and not context.blueprint then"
+position = 'after'
+payload = '''
+	if G.GAME.bad_nope then
 		G.GAME.bad_nope_blocked = true
 		return
 	end

@@ -177,7 +177,7 @@ local function tables_match(a, b, depth)
 		end
 
 		if type(v) == "table" and depth <= 5 then
-			local res = tables_match(v, v_b)
+			local res = tables_match(v, v_b, depth + 1)
 			if res ~= true then
 				return res
 			end
@@ -203,6 +203,11 @@ end
 
 local old_calculate_joker = Card.calculate_joker
 function Card:calculate_joker(context)
+	if context.first_hand_drawn and (self.ability.name == 'DNA' or self.ability.name == 'Trading Card') then
+		-- Don't NOPE when setting jiggle for DNA and Trading card
+		return old_calculate_joker(self, context)
+	end
+
 	-- This calculate is caused by a card that is supposed to Nope!
 	if G.GAME.bad_nope and not context.blueprint_card then
 		G.GAME.bad_nope_blocked = true
@@ -240,20 +245,38 @@ function Card:calculate_joker(context)
 
 		end
 	end
-	
-	G.GAME.bad_nope = should_nope
+
+	local old_bad_nope = G.GAME.bad_nope
+	local old_bad_nope_blocked = G.GAME.bad_nope_blocked
+
+	G.GAME.bad_nope = should_nope and self.config.center.key or false
+	G.GAME.bad_nope_blocked = false
 	local res = old_calculate_joker(self, context)
-	G.GAME.bad_nope = false
 	if should_nope then
+		local do_nope = res or G.GAME.bad_nope_blocked or not tables_match(ability_copy, self.ability)
+
+		G.GAME.bad_nope = old_bad_nope
+		G.GAME.bad_nope_blocked = old_bad_nope_blocked
+		
 		-- Nope popup when card was supposed to activate
-		if res or G.GAME.bad_nope_blocked or not tables_match(ability_copy, self.ability) then
+		if do_nope then
 			undo_actions()
+			if context.individual then
+				return {
+					message = localize('k_nope_ex'),
+					colour = G.C.PURPLE,
+					card = self
+				}
+			end
+			G.GAME.bypass_bad_nope = true
 			card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
+			G.GAME.bypass_bad_nope = false
 		end
-		G.GAME.bad_nope_blocked = false
 		return nil
 	end
 
+	G.GAME.bad_nope = old_bad_nope
+	G.GAME.bad_nope_blocked = old_bad_nope_blocked
 	return res
 end
 
@@ -267,19 +290,10 @@ function Blind:disable(...)
 	return old_disable(self, ...)
 end
 
-local old_set_ability = Card.set_ability
-function Card:set_ability(...)
-	if G.GAME and G.GAME.bad_nope then
-		G.GAME.bad_nope_blocked = true
-		return
-	end
-	old_set_ability(self, ...)
-end
-
 -- Prevent events being added while calculating a card that should Nope!
 local old_add_event = EventManager.add_event
 function EventManager:add_event(...)
-	if G.GAME and G.GAME.bad_nope then
+	if G.GAME and G.GAME.bad_nope and not G.GAME.bypass_bad_nope then
 		G.GAME.bad_nope_blocked = true
 		return
 	end
@@ -290,7 +304,7 @@ end
 -- Prevent popups while calculating a card that should Nope!
 local old_card_eval_status_text = card_eval_status_text
 function card_eval_status_text(...)
-	if G.GAME.bad_nope then
+	if G.GAME.bad_nope and not G.GAME.bypass_bad_nope then
 		G.GAME.bad_nope_blocked = true
 		return
 	end
