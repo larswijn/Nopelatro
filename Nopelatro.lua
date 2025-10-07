@@ -77,6 +77,7 @@ SMODS.DeckSkin {
 }
 
 SMODS.Sticker {
+	-- `eval SMODS.Stickers["bad_nope"]:apply(dp.hovered, true)` in case of debugging
 	key = "nope",
 	atlas = "stickers",
 	pos = { x = 0, y = 0 },
@@ -229,6 +230,11 @@ end
 
 local old_calculate_joker = Card.calculate_joker
 function Card:calculate_joker(context)
+	if context.mod_probability or context.fix_probability or context.pseudorandom_result then
+		-- do NOT fuck with these probability contexts, prone to causing infinite loops
+		return old_calculate_joker(self, context)
+	end
+	
 	if context.first_hand_drawn and (self.ability.name == 'DNA' or self.ability.name == 'Trading Card') then
 		-- Don't NOPE when setting jiggle for DNA and Trading card
 		return old_calculate_joker(self, context)
@@ -241,20 +247,20 @@ function Card:calculate_joker(context)
 	end
 
 	local should_nope = nil
-	local undo_actions = nil
+	local undo_actions = function() end
 	local ability_copy = nil
 	
-	if self and self.ability and self.ability.bad_nope and not context.blueprint_card and
-			not context.mod_probability and not context.fix_probability and not context.pseudorandom_result then
+	if self and self.ability and self.ability.bad_nope then
 		-- only do this when card has the sticker and the context isn't probability-related; yes, blueprints stack 1/2 chances
 		if SMODS.pseudorandom_probability(self, 'bad_nope', 1, self.ability.bad_nope_chance) then
-			-- success, let the card activate
+			-- success, let the card activate normally
 		else
-			-- failure, prevent activation
+			-- failure, revert activation and show nope
 			should_nope = true
 			local consumeable_buffer = G.GAME.consumeable_buffer
 			local dollar_buffer = G.GAME.dollar_buffer
 			local joker_buffer = G.GAME.joker_buffer
+			local game_pool_buffer = copy_table(G.GAME.pool_flags)
 			local other_card_ability = context.other_card and copy_table(context.other_card.ability) or nil
 			ability_copy = copy_table(self.ability)
 
@@ -262,6 +268,7 @@ function Card:calculate_joker(context)
 				G.GAME.consumeable_buffer = consumeable_buffer
 				G.GAME.dollar_buffer = dollar_buffer
 				G.GAME.joker_buffer = joker_buffer
+				G.GAME.pool_flags = game_pool_buffer
 				self.ability = ability_copy
 
 				if other_card_ability then
@@ -272,37 +279,38 @@ function Card:calculate_joker(context)
 		end
 	end
 
-	local old_bad_nope = G.GAME.bad_nope
-	local old_bad_nope_blocked = G.GAME.bad_nope_blocked
-
-	G.GAME.bad_nope = should_nope and self.config.center.key or false
-	G.GAME.bad_nope_blocked = false
+	G.GAME.bad_nope = should_nope and self.config.center.key or G.GAME.bad_nope or false
+	G.GAME.bad_nope_blocked = G.GAME.bad_nope_blocked or false
 	local res = old_calculate_joker(self, context)
-	if should_nope then
-		local do_nope = res or G.GAME.bad_nope_blocked or not tables_match(ability_copy, self.ability)
-
-		G.GAME.bad_nope = old_bad_nope
-		G.GAME.bad_nope_blocked = old_bad_nope_blocked
-		
+	local old_bad_nope_blocked = G.GAME.bad_nope_blocked
+	if not context.blueprint_card then
+		G.GAME.bad_nope = false
+		G.GAME.bad_nope_blocked = false
+	end
+	
+	if should_nope or old_bad_nope_blocked then
+		local do_nope = res or old_bad_nope_blocked or not tables_match(ability_copy, self.ability)
 		-- Nope popup when card was supposed to activate
 		if do_nope then
 			undo_actions()
-			if context.individual then
+			if context.end_of_round and context.repetition then
+				-- Weird edgecase with Mime: (unenhanced) cards have no effect but still trigger this context
+				-- returning "again" for these cards in this context gets silently ignored, but returning anything else gives a message/pop-up
+				-- so we explicitly return nil to avoid unexpected "Nope!"s
+				return nil
+			elseif context.individual then
 				return {
 					message = localize('k_nope_ex'),
 					colour = G.C.PURPLE,
 					card = self
 				}
+			else
+				card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
 			end
-			G.GAME.bypass_bad_nope = true
-			card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
-			G.GAME.bypass_bad_nope = false
 		end
 		return nil
 	end
 
-	G.GAME.bad_nope = old_bad_nope
-	G.GAME.bad_nope_blocked = old_bad_nope_blocked
 	return res
 end
 
@@ -314,6 +322,16 @@ function Blind:disable(...)
 	end
 
 	return old_disable(self, ...)
+end
+
+local old_SMODS_destroy_cards = SMODS.destroy_cards
+function SMODS.destroy_cards(...)
+	if G.GAME and G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+	
+	return old_SMODS_destroy_cards(...)
 end
 
 -- Prevent events being added while calculating a card that should Nope!

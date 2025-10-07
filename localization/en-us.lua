@@ -5,7 +5,7 @@ return {
                 name = "Nope!",
                 text = {
                     "{C:green}#1# in #2#{} chance to activate",
-                    "{C:inactive}(this round){}",
+                    -- "{C:inactive}(this round){}",
                 },
             },
 		}

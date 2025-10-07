@@ -39,7 +39,6 @@ pattern = "if self.ability.name == 'DNA' and G.GAME.current_round.hands_played =
 position = 'after'
 payload = '''
 	if G.GAME.bad_nope then
-	print ("calculate blocked for dna")
 		G.GAME.bad_nope_blocked = true
 		return
 	end
