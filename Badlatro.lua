@@ -99,8 +99,48 @@ function Game:init_game_object()
 	return result
 end
 
+local function copy_table(t)
+	if type(t) ~= "table" then
+		return t
+	end
+	local res = {}
+
+	for k, v in pairs(t) do
+		res[k] = v
+	end
+
+	return res
+end
+
+local function table_size(t)
+	local size = 0
+	local last_index = nil
+	while true do
+		last_index = next(t, last_index)
+		if last_index then
+			size = size + 1
+		else
+			return size
+		end
+	end
+end
+
+local function tables_match(a, b)
+	local a_size = 0;
+	for k, v in pairs(a) do
+		if b[k] ~= v then
+			return false
+		end
+
+		a_size = a_size + 1
+	end
+	return a_size == table_size(b)
+end
+
 local old_calculate_joker = Card.calculate_joker
 function Card:calculate_joker(context)
+
+	local should_nope = false
 	if self and self.ability and self.ability.bad_nope and
 			not context.mod_probability and not context.fix_probability and not context.pseudorandom_result then
 		-- only do this when card has the sticker and the context isn't probability-related; yes, blueprints stack 1/2 chances
@@ -108,26 +148,74 @@ function Card:calculate_joker(context)
 			-- success, let the card activate
 		else
 			-- failure, prevent activation
-			return nil
+			should_nope = true
+
 		end
 	end
 	
-	return old_calculate_joker(self, context)
+	G.GAME.bad_nope = should_nope
+	local ability_copy = should_nope and copy_table(self.ability)
+	local res = old_calculate_joker(self, context)
+	G.GAME.bad_nope = false
+	if should_nope then
+		-- Nope popup when card was supposed to activate
+		if res or G.GAME.bad_nope_blocked or not tables_match(ability_copy, self.ability) then
+			self.ability = ability_copy
+			card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
+		end
+		G.GAME.bad_nope_blocked = false
+		return nil
+	end
+
+	return res
 end
+
+-- Prevent events being added while calculating a card that should Nope!
+local old_add_event = EventManager.add_event
+function EventManager:add_event(...)
+	if G.GAME and G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+    
+	return old_add_event(self, ...)
+end
+
+-- Prevent popups while calculating a card that should Nope!
+local old_card_eval_status_text = card_eval_status_text
+function card_eval_status_text(...)
+	if G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+    
+	return old_card_eval_status_text(...)
+end
+
 
 local old_calculate_dollar_bonus = Card.calculate_dollar_bonus
 function Card:calculate_dollar_bonus()
+	local should_nope = false
 	if self and self.ability and self.ability.bad_nope then
 		-- only do this when card has the sticker and the context isn't probability-related; yes, blueprints stack 1/2 chances
 		if SMODS.pseudorandom_probability(self, 'bad_nope', 1, self.ability.bad_nope_chance) then
 			-- success, let the card activate
 		else
 			-- failure, prevent activation
-			return nil
+			should_nope = true
 		end
 	end
-	
-	return old_calculate_dollar_bonus(self)
+
+	local res = old_calculate_dollar_bonus(self)
+	-- Nope popup when card was supposed to activate 
+	if should_nope then
+		if res then
+			card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
+		end
+		return nil
+	end
+
+	return res
 end
 
 local old_use_consumeable = Card.use_consumeable
