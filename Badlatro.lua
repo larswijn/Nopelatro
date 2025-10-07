@@ -9,6 +9,13 @@ SMODS.Atlas {
 	path = 'AceOfNopes2.png'
 }
 
+SMODS.Atlas {
+	key = 'nope_suit_HC',
+	px = 71,
+	py = 95,
+	path = 'AceOfNopes2_HC.png'
+}
+
 SMODS.Atlas{
 	key = "stickers",
 	px = 71,
@@ -33,6 +40,16 @@ SMODS.DeckSkin {
 			ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
 			display_ranks = {"Ace", "King", "Queen", "Jack", '10', '9', '8', '7', '6', '5', '4', '3', '2'},
 			atlas = "bad_nope_suit",
+			pos_style = 'deck',
+			--[[suit_icon = {
+				atlas = icon_lc.key,
+			},--]]
+		},
+		{
+			key = "hc",
+			ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
+			display_ranks = {"Ace", "King", "Queen", "Jack", '10', '9', '8', '7', '6', '5', '4', '3', '2'},
+			atlas = "bad_nope_suit_HC",
 			pos_style = 'deck',
 			--[[suit_icon = {
 				atlas = icon_lc.key,
