@@ -99,14 +99,20 @@ function Game:init_game_object()
 	return result
 end
 
-local function copy_table(t)
+local function copy_table(t, depth)
 	if type(t) ~= "table" then
 		return t
 	end
+	depth = depth or 1
 	local res = {}
 
 	for k, v in pairs(t) do
-		res[k] = v
+		if type(v) == "table" and depth <= 5 then
+			res[k] = copy_table(v, depth + 1)
+		else
+			res[k] = v
+
+		end
 	end
 
 	return res
@@ -125,22 +131,46 @@ local function table_size(t)
 	end
 end
 
-local function tables_match(a, b)
+local function tables_match(a, b, depth)
+	assert(type(a) == "table", "First parameter must be a table!")
+	assert(type(b) == "table", "Second parameter must be a table!")
+	depth = depth or 1
+
 	local a_size = 0;
 	for k, v in pairs(a) do
-		if b[k] ~= v then
+		local v_b = b[k]
+		if type(v) ~= type(v_b) then
+			return false
+		end
+
+		if type(v) == "table" and depth <= 5 then
+			local res = tables_match(v, v_b)
+			if res ~= true then
+				return res
+			end
+
+		elseif b[k] ~= v then
 			return false
 		end
 
 		a_size = a_size + 1
 	end
+
 	return a_size == table_size(b)
 end
 
 local old_calculate_joker = Card.calculate_joker
 function Card:calculate_joker(context)
+	-- This calculate is caused by a card that is supposed to Nope!
+	if G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return nil
+	end
 
-	local should_nope = false
+	local should_nope = nil
+	local undo_actions = nil
+	local ability_copy = nil
+	
 	if self and self.ability and self.ability.bad_nope and
 			not context.mod_probability and not context.fix_probability and not context.pseudorandom_result then
 		-- only do this when card has the sticker and the context isn't probability-related; yes, blueprints stack 1/2 chances
@@ -149,18 +179,33 @@ function Card:calculate_joker(context)
 		else
 			-- failure, prevent activation
 			should_nope = true
+			local consumeable_buffer = G.GAME.consumeable_buffer
+			local dollar_buffer = G.GAME.dollar_buffer
+			local joker_buffer = G.GAME.joker_buffer
+			local other_card_ability = context.other_card and copy_table(context.other_card.ability) or nil
+			ability_copy = copy_table(self.ability)
+
+			undo_actions = function ()
+				G.GAME.consumeable_buffer = consumeable_buffer
+				G.GAME.dollar_buffer = dollar_buffer
+				G.GAME.joker_buffer = joker_buffer
+				self.ability = ability_copy
+
+				if other_card_ability then
+					context.other_card.ability = other_card_ability
+				end
+			end
 
 		end
 	end
 	
 	G.GAME.bad_nope = should_nope
-	local ability_copy = should_nope and copy_table(self.ability)
 	local res = old_calculate_joker(self, context)
 	G.GAME.bad_nope = false
 	if should_nope then
 		-- Nope popup when card was supposed to activate
 		if res or G.GAME.bad_nope_blocked or not tables_match(ability_copy, self.ability) then
-			self.ability = ability_copy
+			undo_actions()
 			card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_nope_ex'), colour = G.C.PURPLE})
 		end
 		G.GAME.bad_nope_blocked = false
@@ -168,6 +213,25 @@ function Card:calculate_joker(context)
 	end
 
 	return res
+end
+
+local old_disable = Blind.disable
+function Blind:disable(...)
+	if G.GAME and G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+
+	return old_disable(self, ...)
+end
+
+local old_set_ability = Card.set_ability
+function Card:set_ability(...)
+	if G.GAME and G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+	old_set_ability(self, ...)
 end
 
 -- Prevent events being added while calculating a card that should Nope!
