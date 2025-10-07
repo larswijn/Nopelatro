@@ -117,7 +117,15 @@ SMODS.Joker:take_ownership('oops',
 		bad_nope_compat = false,
 		atlas = "die",
 		pos = { x = 0, y = 0},
+		blueprint_compat = true,
 		soul_pos = { x = 1, y = 0},
+		calculate = function (self, card, context)
+			if context.mod_probability then
+				return {
+					numerator = context.numerator * 2
+				}
+			end
+		end,
     },
     false  -- show nopelatro mod badge
 )
