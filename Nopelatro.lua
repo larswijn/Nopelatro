@@ -1,4 +1,4 @@
-local badlatro = SMODS.current_mod
+local nopelatro = SMODS.current_mod
 
 -- SMODS atlas for icon?
 
@@ -28,6 +28,24 @@ SMODS.Atlas{
 	px = 71,
 	py = 95,
 	path = "die.png"
+}
+
+SMODS.Atlas{
+	key = "balatro",
+	px = 353,
+	py = 212,
+	path = "Nopelatro.png",
+	prefix_config = false,
+}
+
+SMODS.Atlas{
+	key = "shop_sign",
+	px = 113,
+	py = 57,
+	frames = 4,
+	path = "ShopSignAnimation.png",
+	atlas_table = "ANIMATION_ATLAS",
+	prefix_config = false,
 }
 
 SMODS.DeckSkin {
@@ -64,7 +82,7 @@ SMODS.Sticker {
 	pos = { x = 0, y = 0 },
 	-- description in localization file
 	rate = 1,
-	badge_colour = badlatro.badge_colour,
+	badge_colour = nopelatro.badge_colour,
 	config = { extra = { odds = 2 } },
 	should_apply = function(self, card, center, area, bypass_roll)
 		if center.bad_nope_compat == false then
@@ -101,14 +119,14 @@ SMODS.Joker:take_ownership('oops',
 		pos = { x = 0, y = 0},
 		soul_pos = { x = 1, y = 0},
     },
-    false  -- show badlatro mod badge
+    false  -- show nopelatro mod badge
 )
 
 SMODS.Consumable:take_ownership('soul',
 	{
 		bad_nope_compat = false,
 	},
-	true  -- hide badlatro mod badge
+	true  -- hide nopelatro mod badge
 )
 
 -- local functions
@@ -197,7 +215,7 @@ local old_game_init_game_object = Game.init_game_object
 function Game:init_game_object()
 	local result = old_game_init_game_object(self)
 	result.modifiers = result.modifiers or {}
-	result.modifiers["enable_bad_nope"] = badlatro.config.enable_nope_sticker
+	result.modifiers["enable_bad_nope"] = nopelatro.config.enable_nope_sticker
 	return result
 end
 
@@ -357,10 +375,10 @@ SMODS.current_mod.config_tab = function()
     return {n=G.UIT.ROOT, config = {align = "cl", minh = G.ROOM.T.h*0.25, padding = 0.0, r = 0.1, colour = G.C.GREY}, nodes = {
         {n = G.UIT.R, config = { padding = 0.05 }, nodes = {
             {n = G.UIT.C, config = { align = "cr", minw = G.ROOM.T.w*0.25, padding = 0.05 }, nodes = {
-                create_toggle{ label = localize("bad_enable_nope_sticker"), active_colour = badlatro.badge_colour, ref_table = badlatro.config, ref_value = "enable_nope_sticker" },
+                create_toggle{ label = localize("bad_enable_nope_sticker"), active_colour = nopelatro.badge_colour, ref_table = nopelatro.config, ref_value = "enable_nope_sticker" },
             }},
         }}
     }}
 end
 
-sendDebugMessage("Badlatro loaded", "Badlatro")
+sendDebugMessage("Nopelatro loaded", "nopelatro")

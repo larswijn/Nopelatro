@@ -15,6 +15,7 @@ return {
 			bad_nope = "Nope!"
 		},
 		dictionary = {
+			ph_improve_run = "Good luck :)",  -- override
 			bad_enable_nope_sticker = "Enable the Nope! Sticker",
 			b_skip_blind_info = " in 2 chance for Tag",
 		}

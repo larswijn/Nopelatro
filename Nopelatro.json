@@ -1,11 +1,11 @@
 {
-	"id": "Badlatro",
-	"name": "Badlatro",
+	"id": "Nopelatro",
+	"name": "Nopelatro",
 	"author": ["MurphyObv", "Larswijn", "Astra", "Stupxd", "Crimson Heart"],
     "badge_colour": "A782D1",
 	"description": "",
 	"prefix": "bad",
-	"main_file": "Badlatro.lua",
+	"main_file": "Nopelatro.lua",
     "version": "0.0.1",
     "priority": 0,
     "dependencies": [
