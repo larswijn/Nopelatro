@@ -42,7 +42,7 @@ SMODS.Atlas{
 	key = "shop_sign",
 	px = 113,
 	py = 57,
-	frames = 4,
+	frames = 3,
 	path = "ShopSignAnimation.png",
 	atlas_table = "ANIMATION_ATLAS",
 	prefix_config = false,
