@@ -140,6 +140,7 @@ SMODS.Consumable:take_ownership('soul',
 
 -- local functions
 local function nope_event(used_tarot)
+	-- copy from Wheel of Fortune
 	return G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
 		attention_text({
 			text = localize('k_nope_ex'),
@@ -232,6 +233,10 @@ local function tables_match(a, b, depth)
 	return a_size == table_size(b)
 end
 
+local function table_is_empty(t)
+	return next(t) == nil
+end
+
 -- hooks
 local old_game_init_game_object = Game.init_game_object
 function Game:init_game_object()
@@ -306,10 +311,10 @@ function Card:calculate_joker(context)
 		-- Nope popup when card was supposed to activate
 		if do_nope then
 			undo_actions()
-			if context.end_of_round and context.repetition then
-				-- Weird edgecase with Mime: (unenhanced) cards have no effect but still trigger this context
-				-- returning "again" for these cards in this context gets silently ignored, but returning anything else gives a message/pop-up
-				-- so we explicitly return nil to avoid unexpected "Nope!"s
+			if context.end_of_round and context.repetition and table_is_empty(context.card_effects and context.card_effects[1] and context.card_effects[1].end_of_round or {}) then
+				-- Weird edgecase with Mime: every card triggers this context (even when they have no effect, e.g. unenhanced)
+				-- returning "again" for these cards in this context gets silently ignored, but returning anything else gives a pop-up
+				-- so we check if the card does nothing and explicitly return nil to avoid unexpected "Nope!"s
 				return nil
 			elseif context.individual then
 				return {
