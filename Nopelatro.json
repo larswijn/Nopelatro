@@ -9,7 +9,7 @@
     "version": "1.0.1",
     "priority": 0,
     "dependencies": [
-        "Steamodded (>=1.0.0~ALPHA-1424a)",
+        "Steamodded (>=1.0.0~BETA-0711a)",
         "Lovely (>=0.6.0)"
     ]
 }
