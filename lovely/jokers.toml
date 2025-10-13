@@ -31,6 +31,20 @@ payload = '''
 '''
 match_indent = true
 
+# Nope when Madness kills
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Madness' and not context.blueprint and not context.blind.boss then"
+position = 'after'
+payload = '''
+	if G.GAME.bad_nope then
+		G.GAME.bad_nope_blocked = true
+		return
+	end
+'''
+match_indent = true
+
 # Nope when DNA copy
 [[patches]]
 [patches.pattern]
