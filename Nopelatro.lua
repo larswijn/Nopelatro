@@ -159,6 +159,19 @@ local function nope_event(used_tarot)
 	end}))
 end
 
+local function wrap_function_with_nope(func)
+	-- "wraps" target function with a check for `G.GAME.bad_nope` and returns prematurely
+	-- useful for when you want to hook multiple functions with the exact same functionality
+	local function wrapper(...)
+		if G.GAME and G.GAME.bad_nope and not G.GAME.bypass_bad_nope then
+			G.GAME.bad_nope_blocked = true
+			return
+		end
+		return func(...)
+	end
+	return wrapper
+end
+
 local function copy_table(t, depth)
 	if type(t) ~= "table" then
 		return t
@@ -314,48 +327,6 @@ function Card:calculate_joker(context)
 	return res
 end
 
-local old_disable = Blind.disable
-function Blind:disable(...)
-	if G.GAME and G.GAME.bad_nope then
-		G.GAME.bad_nope_blocked = true
-		return
-	end
-
-	return old_disable(self, ...)
-end
-
-local old_SMODS_destroy_cards = SMODS.destroy_cards
-function SMODS.destroy_cards(...)
-	if G.GAME and G.GAME.bad_nope then
-		G.GAME.bad_nope_blocked = true
-		return
-	end
-	
-	return old_SMODS_destroy_cards(...)
-end
-
--- Prevent events being added while calculating a card that should Nope!
-local old_add_event = EventManager.add_event
-function EventManager:add_event(...)
-	if G.GAME and G.GAME.bad_nope and not G.GAME.bypass_bad_nope then
-		G.GAME.bad_nope_blocked = true
-		return
-	end
-    
-	return old_add_event(self, ...)
-end
-
--- Prevent popups while calculating a card that should Nope!
-local old_card_eval_status_text = card_eval_status_text
-function card_eval_status_text(...)
-	if G.GAME.bad_nope and not G.GAME.bypass_bad_nope then
-		G.GAME.bad_nope_blocked = true
-		return
-	end
-    
-	return old_card_eval_status_text(...)
-end
-
 local old_calculate_dollar_bonus = Card.calculate_dollar_bonus
 function Card:calculate_dollar_bonus()
 	local should_nope = false
@@ -396,6 +367,12 @@ function Card:use_consumeable(area, copier)
 	
 	return old_use_consumeable(self, area, copier)
 end
+
+Blind.disable = wrap_function_with_nope(Blind.disable)
+SMODS.destroy_cards = wrap_function_with_nope(SMODS.destroy_cards)
+EventManager.add_event = wrap_function_with_nope(EventManager.add_event)
+card_eval_status_text = wrap_function_with_nope(card_eval_status_text)
+level_up_hand = wrap_function_with_nope(level_up_hand)
 
 SMODS.current_mod.config_tab = function()
     return {n=G.UIT.ROOT, config = {align = "cl", minh = G.ROOM.T.h*0.25, padding = 0.0, r = 0.1, colour = G.C.GREY}, nodes = {
