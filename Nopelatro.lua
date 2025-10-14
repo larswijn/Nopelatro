@@ -364,7 +364,8 @@ function Card:use_consumeable(area, copier)
 		if SMODS.pseudorandom_probability(self, 'bad_nope', 1, self.ability.bad_nope_chance) then
 			-- success, let the card activate
 		else
-			-- failure, prevent activation
+			-- failure, prevent activation (and explicitly set consumable_usage as Fortune Teller expects it to exist)
+			G.GAME.consumeable_usage_total = G.GAME.consumeable_usage_total or {tarot = 0, planet = 0, spectral = 0, tarot_planet = 0, all = 0}
 			nope_event(copier or self)
 			return nil
 		end
