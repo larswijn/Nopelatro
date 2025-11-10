@@ -6,7 +6,7 @@
 	"description": "What if EVERYTHING in balatro was a flip of the coin?",
 	"prefix": "bad",
 	"main_file": "Nopelatro.lua",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "priority": 0,
     "dependencies": [
         "Steamodded (>=1.0.0~BETA-0711a)",
