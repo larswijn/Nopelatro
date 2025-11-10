@@ -292,6 +292,8 @@ function Card:calculate_joker(context)
 				if other_card_ability then
 					context.other_card.ability = other_card_ability
 				end
+				
+				self:set_cost()
 			end
 
 		end
